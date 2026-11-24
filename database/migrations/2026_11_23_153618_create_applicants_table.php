@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('applicants', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constraimned()->cascadeOnDelete();
-            $table->string('studebt_no')->unique();
+            $table->string('student_no')->unique();
             $table->string('course');
             $table->text('address')->nullable();
             $table->date('birth_date')->nullable();
