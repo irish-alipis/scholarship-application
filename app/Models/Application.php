@@ -15,7 +15,21 @@ class Application extends Model
 {
     // Only the two owners are mass assignable.
     // status, eligibility and snapshot fields change only through methods.
-    protected $fillable = ['applicant_id', 'scholarship_id'];
+    protected $fillable = [
+        'applicant_id',
+        'scholarship_id',
+        'assigned_evaluator_id',
+        'assigned_at',
+        'status',
+        'eligibility_result',
+        'eligibility_reasons',
+        'gwa',
+        'annual_family_income',
+        'year_level',
+        'submitted_at',
+        'decided_at',
+        'cancelled_at',
+    ];
 
     protected $attributes = ['status' => 'draft'];
 
@@ -44,9 +58,20 @@ class Application extends Model
         return $this->belongsTo(Scholarship::class);
     }
 
-    public function assignedEvaluator(): BelongsTo
+    public function evaluator(): BelongsTo
     {
         return $this->belongsTo(Evaluator::class, 'assigned_evaluator_id');
+    }
+
+    public function assignTo(Evaluator $evaluator): void
+    {
+        $this->update([
+            'assigned_evaluator_id' => $evaluator->id,
+            'assigned_at' => now(),
+            'status' => $this->status === ApplicationStatus::Submitted
+                ? ApplicationStatus::UnderEvaluation
+                : $this->status,
+        ]);
     }
 
     public function documents(): HasMany

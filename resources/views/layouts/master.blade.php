@@ -24,6 +24,9 @@
     <!-- Color Picker Css -->
     <link rel="stylesheet" href="{{ asset('backend/assets/libs/@simonwep/pickr/themes/nano.min.css') }}">
 
+    <!-- Sweet Alert -->
+    <link rel="stylesheet" href="{{ asset('backend/assets/libs/sweetalert2/sweetalert2.min.css') }}">
+
     @stack('styles')
 </head>
 
@@ -1049,6 +1052,29 @@
     <script src="{{ asset('backend/assets/js/custom.js') }}"></script>
 
     @stack('scripts')
+    
+    <script src="{{ asset('backend/assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
+<script>
+document.addEventListener('submit', function (e) {
+    const form = e.target;
+    const message = form.dataset.confirm;
+    if (!message) return;
+
+    e.preventDefault();
+    Swal.fire({
+        title: 'Confirmation Required',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#26bf4a',
+        cancelButtonColor: '#23b7e5',
+    }).then(function (result) {
+        if (result.isConfirmed) form.submit();
+    });
+});
+</script>
 
 </body>
 

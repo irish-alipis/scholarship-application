@@ -49,8 +49,19 @@ class LoginRequest extends FormRequest
                 'email' => trans('auth.failed'),
             ]);
         }
-
+        
         RateLimiter::clear($this->throttleKey());
+        
+        // blocks log in if the account status is blocked
+        if (Auth::user()->status !== \App\Enums\AccountStatus::Active) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Your account is not active. Please contact the administrator',
+            ]);
+        }
+        
+        app(\App\Services\AuditLogger::class)->log(Auth::user(), \App\Enums\Action::Login, \App\Enums\EntityType::User, Auth::id(), 'Logged in');
     }
 
     /**

@@ -14,7 +14,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ScholarshipRequirement extends Model
 {
     protected $fillable = [
-        'scholarship_id', 'requirement_type', 'requirement_condition', 'required_value',
+        'scholarship_id',
+        'requirement_type',
+        'requirement_condition',
+        'required_value',
     ];
 
     protected function casts(): array
@@ -31,12 +34,20 @@ class ScholarshipRequirement extends Model
         return $this->belongsTo(Scholarship::class);
     }
 
-    /** Turn this row into the rule class that knows how to check it. */
+    public function displayValue(): string
+    {
+        return match ($this->requirement_type) {
+            RequirementType::AnnualFamilyIncome => '₱' . number_format($this->required_value, 2),
+            RequirementType::YearLevel => (string) (int) $this->required_value,
+            default => number_format($this->required_value, 2),
+        };
+    }
+
     public function toRule(): EligibilityRule
     {
         return match ($this->requirement_type) {
             RequirementType::Gwa => new GwaRule($this->requirement_condition, $this->required_value),
-            RequirementType::Income => new IncomeRule($this->requirement_condition, $this->required_value),
+            RequirementType::AnnualFamilyIncome => new IncomeRule($this->requirement_condition, $this->required_value),
             RequirementType::YearLevel => new YearLevelRule($this->requirement_condition, $this->required_value),
         };
     }

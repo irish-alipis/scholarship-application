@@ -10,4 +10,9 @@ enum ApplicationStatus: string
     case Approved = 'approved';
     case Rejected = 'rejected';
     case Cancelled = 'cancelled';
+
+    public function label(): string 
+    {
+        return trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $this->name));
+    }
 }

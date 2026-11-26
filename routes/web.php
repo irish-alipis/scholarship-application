@@ -1,14 +1,21 @@
 <?php
 
 use App\Enums\Role;
+use App\Http\Controllers\Admin\ApplicationController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\EvaluatorRequestController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ScholarshipController;
+use App\Http\Controllers\Admin\ScholarshipDocumentController;
+use App\Http\Controllers\Admin\ScholarshipRequirementController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Applicant\ApplicationController as ApplicantApplicationController;
 use App\Http\Controllers\Applicant\DashboardController as ApplicantDashboardController;
 use App\Http\Controllers\Applicant\NotificationController as ApplicantNotificationController;
 use App\Http\Controllers\Applicant\ProfileController as ApplicantProfileController;
 use App\Http\Controllers\Applicant\ScholarshipController as ApplicantScholarshipController;
 use App\Http\Controllers\Applicant\SearchController as ApplicantSearchController;
-use App\Http\Controllers\Evaluator\DashboardController as EvaluatorDashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,11 +42,38 @@ Route::middleware(['auth', 'role:admin,evaluator,applicant'])->group(function ()
 // Admin pages. The Admin owner adds user, scholarship, application, report and audit log routes here.
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+
+    Route::resource('/users', UserController::class)->except(['show', 'destroy']);
+    Route::patch('/users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
+
+    // evaluator requests
+    Route::patch('/evaluator-requests/{user}/approve', [EvaluatorRequestController::class, 'approve'])->name('evaluator-requests.approve');
+    Route::patch('/evaluator-requests/{user}/reject', [EvaluatorRequestController::class, 'reject'])->name('evaluator-requests.reject');
+
+    // scholarship management
+    Route::resource('scholarships', ScholarshipController::class)->except(['destroy']);
+    Route::patch('/scholarships/{scholarship}/status', [ScholarshipController::class, 'updateStatus'])->name('scholarships.status');
+    Route::post('/scholarships/{scholarship}/requirements', [ScholarshipRequirementController::class, 'store'])->name('scholarships.requirements.store');
+    Route::delete('/scholarships/{scholarship}/requirements/{requirement}', [ScholarshipRequirementController::class, 'destroy'])->name('scholarships.requirements.destroy');
+    Route::post('/scholarships/{scholarship}/documents', [ScholarshipDocumentController::class, 'store'])->name('scholarships.documents.store');
+    Route::delete('/scholarships/{scholarship}/documents/{documents}', [ScholarshipDocumentController::class, 'destroy'])->name('scholarships.documents.destroy');
+
+    // application management
+    Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
+    Route::patch('/applications/{application}/assign', [ApplicationController::class, 'assign'])->name('applications.assign');
+
+    // reports management
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+    // audit logs
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 });
 
 // Evaluator pages. The Evaluator owner adds review, evaluation and report routes here.
 Route::middleware(['auth', 'role:evaluator'])->prefix('evaluator')->name('evaluator.')->group(function () {
-    Route::get('/dashboard', EvaluatorDashboardController::class)->name('dashboard');
+    Route::get('/dashboard', fn () => view('evaluator.dashboard'))->name('dashboard');
 });
 
 // Applicant pages. The Applicant owner adds scholarship, application and notification routes here.
@@ -77,4 +111,4 @@ Route::middleware(['auth', 'role:applicant'])->prefix('applicant')->name('applic
     Route::post('/notifications/{notification}/unread', [ApplicantNotificationController::class, 'markAsUnread'])->name('notifications.unread');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -8,6 +8,7 @@ use App\Enums\EntityType;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
+use App\Models\Evaluator;
 use App\Models\Notification;
 use App\Models\RequiredDocument;
 use App\Models\Scholarship;
@@ -50,7 +51,7 @@ class ApplicationService
     /** Start a draft application for an open scholarship. */
     public function createDraft(Applicant $applicant, Scholarship $scholarship, User $actor): Application
     {
-        if (! ScholarshipAvailability::isOpen($scholarship)) {
+        if (!ScholarshipAvailability::isOpen($scholarship)) {
             throw new DomainException('This scholarship is not open for applications.');
         }
 
@@ -65,8 +66,11 @@ class ApplicationService
             ]);
 
             $this->audit->log(
-                $actor, Action::Created, EntityType::Application, $application->id,
-                'Started an application for '.$scholarship->name.'.'
+                $actor,
+                Action::Created,
+                EntityType::Application,
+                $application->id,
+                'Started an application for ' . $scholarship->name . '.'
             );
 
             return $application;
@@ -125,7 +129,7 @@ class ApplicationService
             $existing = $application->documents()->where('required_document_id', $requiredDocument->id)->first();
             $oldPath = $existing?->file_path;
 
-            $path = $file->store('application-documents/'.$application->id, 'local');
+            $path = $file->store('application-documents/' . $application->id, 'local');
 
             $document = ApplicationDocument::updateOrCreate(
                 ['application_id' => $application->id, 'required_document_id' => $requiredDocument->id],
@@ -136,7 +140,7 @@ class ApplicationService
                 Storage::disk('local')->delete($oldPath);
             }
 
-            $this->audit->log($actor, Action::Updated, EntityType::Application, $application->id, 'Uploaded '.$requiredDocument->name.'.');
+            $this->audit->log($actor, Action::Updated, EntityType::Application, $application->id, 'Uploaded ' . $requiredDocument->name . '.');
 
             return $document;
         });
@@ -160,7 +164,7 @@ class ApplicationService
             Storage::disk('local')->delete($document->file_path);
             $document->delete();
 
-            $this->audit->log($actor, Action::Updated, EntityType::Application, $application->id, 'Removed '.$name.'.');
+            $this->audit->log($actor, Action::Updated, EntityType::Application, $application->id, 'Removed ' . $name . '.');
         });
     }
 
@@ -176,7 +180,7 @@ class ApplicationService
                 throw new DomainException('Only a draft application can be submitted.');
             }
 
-            if (! ScholarshipAvailability::isOpen($locked->scholarship)) {
+            if (!ScholarshipAvailability::isOpen($locked->scholarship)) {
                 throw new DomainException('This scholarship is closed, so the application can no longer be submitted.');
             }
 
@@ -192,21 +196,24 @@ class ApplicationService
 
             $missing = $locked->missingDocuments();
             if ($missing->isNotEmpty()) {
-                throw new DomainException('Upload the required documents first: '.$missing->pluck('name')->implode(', ').'.');
+                throw new DomainException('Upload the required documents first: ' . $missing->pluck('name')->implode(', ') . '.');
             }
 
             $locked->submit($this->eligibility->check($applicant, $locked->scholarship));
 
             $this->audit->log(
-                $actor, Action::Submitted, EntityType::Application, $locked->id,
-                'Submitted the application for '.$locked->scholarship->name.'.'
+                $actor,
+                Action::Submitted,
+                EntityType::Application,
+                $locked->id,
+                'Submitted the application for ' . $locked->scholarship->name . '.'
             );
 
             Notification::create([
                 'user_id' => $actor->id,
                 'application_id' => $locked->id,
                 'title' => 'Application submitted',
-                'message' => 'Your application for '.$locked->scholarship->name.' was submitted and is waiting for review.',
+                'message' => 'Your application for ' . $locked->scholarship->name . ' was submitted and is waiting for review.',
             ]);
 
             return $locked;
@@ -219,35 +226,54 @@ class ApplicationService
         return DB::transaction(function () use ($application, $actor) {
             $locked = Application::with('scholarship')->lockForUpdate()->findOrFail($application->id);
 
-            if (! $locked->isEditable()) {
+            if (!$locked->isEditable()) {
                 throw new DomainException('This application can no longer be cancelled.');
             }
 
             $locked->cancel();
 
             $this->audit->log(
-                $actor, Action::Cancelled, EntityType::Application, $locked->id,
-                'Cancelled the application for '.$locked->scholarship->name.'.'
+                $actor,
+                Action::Cancelled,
+                EntityType::Application,
+                $locked->id,
+                'Cancelled the application for ' . $locked->scholarship->name . '.'
             );
 
             Notification::create([
                 'user_id' => $actor->id,
                 'application_id' => $locked->id,
                 'title' => 'Application cancelled',
-                'message' => 'You cancelled your application for '.$locked->scholarship->name.'.',
+                'message' => 'You cancelled your application for ' . $locked->scholarship->name . '.',
             ]);
 
             return $locked;
         });
     }
 
+    /** Admin: assign or reassign an application to an evaluator. */
+    public function assignEvaluator(Application $application, Evaluator $evaluator, User $admin): void
+    {
+        $wasAssigned = $application->assigned_evaluator_id !== null;
+
+        $application->assignTo($evaluator);
+
+        $this->audit->log(
+            $admin,
+            $wasAssigned ? Action::Reassigned : Action::Assigned,
+            EntityType::Application,
+            $application->id,
+            'Evaluator: ' . $evaluator->user->name
+        );
+    }
+
     private function assertEditable(Application $application): void
     {
-        if (! $application->isEditable()) {
+        if (!$application->isEditable()) {
             throw new DomainException('This application can no longer be changed.');
         }
 
-        if (! ScholarshipAvailability::isOpen($application->scholarship)) {
+        if (!ScholarshipAvailability::isOpen($application->scholarship)) {
             throw new DomainException('The scholarship is closed, so the application can no longer be changed.');
         }
     }
