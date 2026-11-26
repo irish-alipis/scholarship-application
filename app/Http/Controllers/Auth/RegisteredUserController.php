@@ -35,17 +35,19 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', Rule::in([Role::Applicant->value, Role::Evaluator->value])],
+            'role' => ['nullable', Rule::in([Role::Applicant->value, Role::Evaluator->value])],
         ]);
+
+        $role = $request->input('role', Role::Applicant->value);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'status' => $request->role === Role::Evaluator->value
+            'role' => $role,
+            'status' => $role === Role::Evaluator->value
                 ? AccountStatus::Pending
                 : AccountStatus::Active,
         ]);

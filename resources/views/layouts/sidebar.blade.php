@@ -31,9 +31,7 @@
                 @include('layouts.menus.applicant')
             @endif
 
-            {{-- Shared by every role --}}
-            <li class="slide__category"><span class="category-name">Account</span></li>
-            @include('layouts.partials.menu-item', ['label' => 'My Profile', 'route' => 'profile.edit', 'pattern' => 'profile.*', 'icon' => 'person'])
+          
         </ul>
 
         <div class="slide-right" id="slide-right"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191" width="24" height="24" viewBox="0 0 24 24">
