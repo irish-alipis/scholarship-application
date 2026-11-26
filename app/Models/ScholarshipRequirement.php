@@ -4,6 +4,10 @@ namespace App\Models;
 
 use App\Enums\RequirementCondition;
 use App\Enums\RequirementType;
+use App\Rules\EligibilityRule;
+use App\Rules\GwaRule;
+use App\Rules\IncomeRule;
+use App\Rules\YearLevelRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -27,5 +31,19 @@ class ScholarshipRequirement extends Model
         return $this->belongsTo(Scholarship::class);
     }
 
-    // TODO (Applicant owner, with the rule classes): toRule()
+    /** Turn this row into the rule class that knows how to check it. */
+    public function toRule(): EligibilityRule
+    {
+        return match ($this->requirement_type) {
+            RequirementType::Gwa => new GwaRule($this->requirement_condition, $this->required_value),
+            RequirementType::Income => new IncomeRule($this->requirement_condition, $this->required_value),
+            RequirementType::YearLevel => new YearLevelRule($this->requirement_condition, $this->required_value),
+        };
+    }
+
+    /** Plain wording, for example "GWA must be 2.00 or lower". */
+    public function describe(): string
+    {
+        return $this->toRule()->describe();
+    }
 }
