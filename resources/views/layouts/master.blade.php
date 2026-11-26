@@ -10,7 +10,7 @@
     <meta name="keywords" content="dashboard,admin dashboard,template dashboard,html,html dashboard,admin dashboard template,admin template,tailwind ui,admin panel,html and css,html admin template,tailwind framework,html css javascript,tailwind css dashboard,dashboard html css,admin,template admin panel,dashboard html template">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('backend/assets/images/brand-logos/favicon.ico') }}">
+   <link rel="icon" type="image/png" href="{{ asset('backend/assets/images/brand-logos/toggle-logo.png') }}">
 
     <!-- Main JS -->
     <script src="{{ asset('backend/assets/js/main.js') }}"></script>
@@ -41,19 +41,7 @@
             <div class="main-header-container !px-[0.85rem]">
 
               <div class="header-content-left">
-                <!-- Start::header-element -->
-                <div class="header-element">
-                  <div class="horizontal-logo">
-                    <a href="{{ route('dashboard') }}" class="header-logo">
-                      <img src="{{ asset('backend/assets/images/brand-logos/desktop-logo.png') }}" alt="logo" class="desktop-logo">
-                      <img src="{{ asset('backend/assets/images/brand-logos/toggle-logo.png') }}" alt="logo" class="toggle-logo">
-                      <img src="{{ asset('backend/assets/images/brand-logos/desktop-dark.png') }}" alt="logo" class="desktop-dark">
-                      <img src="{{ asset('backend/assets/images/brand-logos/toggle-dark.png') }}" alt="logo" class="toggle-dark">
-                      <img src="{{ asset('backend/assets/images/brand-logos/desktop-white.png') }}" alt="logo" class="desktop-white">
-                    </a>
-                  </div>
-                </div>
-                <!-- End::header-element -->
+                
 
                 <!-- End::header-element -->
                 <div class="header-element !items-center">
@@ -203,14 +191,13 @@
                 </div>
                 <!-- End Full screen -->
 
-                <!-- Header Profile -->
-                <div
-                  class="header-element md:!px-[0.5rem] px-2 hs-dropdown profile-dropdown !items-center ti-dropdown [--placement:bottom-left]">
-                  <button id="dropdown-profile" type="button"
-                    class="hs-dropdown-toggle ti-dropdown-toggle !gap-2 !p-0 flex-shrink-0 me-0 !rounded-full !shadow-none text-xs align-middle !border-0 !shadow-transparent ">
-                    <img class="inline-block rounded-full " src="{{ asset('backend/assets/images/faces/6.jpg') }}" width="37" height="37"
-                      alt="Profile">
-                  </button>
+               <!-- Header Profile -->
+              <div
+                class="header-element md:!px-[0.5rem] px-2 hs-dropdown profile-dropdown !items-center ti-dropdown [--placement:bottom-left]">
+              <button id="dropdown-profile" type="button"
+                  class="hs-dropdown-toggle ti-dropdown-toggle !gap-2 !p-0 flex-shrink-0 me-0 !rounded-full !shadow-none text-xs align-middle !border-0 !shadow-transparent ">
+             <i class="bx bx-user-circle header-link-icon !text-[2rem] !leading-none"></i>
+              </button>
                   <div
                     class="main-header-dropdown !-mt-2 !p-0 hs-dropdown-menu ti-dropdown-menu  bg-white  !border-0 border-defaultborder hidden !m-0"
                     aria-labelledby="dropdown-profile">
