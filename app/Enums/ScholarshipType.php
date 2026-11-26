@@ -8,4 +8,9 @@ enum ScholarshipType: string
     case Merit = 'merit';
     case FinancialAid = 'financial_aid';
     case Other = 'other';
+
+    public function label(): string 
+    {
+        return trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $this->name));
+    } 
 }

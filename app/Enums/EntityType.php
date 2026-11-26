@@ -9,4 +9,9 @@ enum EntityType: string
     case Requirement = 'requirement';
     case Application = 'application';
     case Evaluation = 'evaluation';
+
+    public function label(): string
+    {
+        return ucfirst($this->value);
+    }
 }

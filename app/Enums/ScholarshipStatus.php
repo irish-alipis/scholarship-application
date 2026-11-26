@@ -8,4 +8,9 @@ enum ScholarshipStatus: string
     case Open = 'open';
     case Closed = 'closed';
     case Inactive = 'inactive';
+
+    public function label(): string 
+    {
+        return trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $this->name));
+    } 
 }

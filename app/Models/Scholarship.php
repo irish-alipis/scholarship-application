@@ -10,7 +10,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Scholarship extends Model
 {
     protected $fillable = [
-        'name', 'description', 'type', 'slots', 'start_date', 'deadline', 'status',
+        'name',
+        'description',
+        'type',
+        'slots',
+        'start_date',
+        'deadline',
+        'status',
     ];
 
     protected $attributes = ['status' => 'draft'];
@@ -41,5 +47,37 @@ class Scholarship extends Model
         return $this->hasMany(Application::class);
     }
 
-    // TODO (Admin owner): isOpen(), hasAvailableSlots(), open(), close(), deactivate()
+    public function isOpen(): bool
+    {
+        return $this->status === ScholarshipStatus::Open
+            && now()->between($this->start_date, $this->deadline);
+    }
+
+    public function hasAvailableSlots(): bool
+    {
+        $taken = $this->applications()->where('status', 'approved')->count();
+
+        return $taken < $this->slots;
+    }
+
+    public function open(): bool
+    {
+        if ($this->deadline->isPast()) {
+            return false;
+        }
+
+        $this->update(['status' => ScholarshipStatus::Open]);
+
+        return true;
+        }
+
+    public function close(): void
+    {
+        $this->update(['status' => ScholarshipStatus::Closed]);
+    }
+
+    public function deactivate(): void
+    {
+        $this->update(['status' => ScholarshipStatus::Inactive]);
+    }
 }

@@ -16,7 +16,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['name', 'email', 'password', 'phoneNumber', 'role', 'status',];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -70,6 +70,37 @@ class User extends Authenticatable
     {
         return $this->role === $role;
     }
+    public function approve(): void
+    {
+        $this->update(['status' => AccountStatus::Active]);
+    }
+    public function activate(): void
+    {
+        $this->update(['status' => AccountStatus::Active]);
+    }
+    public function suspend(): void
+    {
+        $this->update(['status' => AccountStatus::Suspended]);
+    }
+    public function deactivate(): void
+    {
+        $this->update(['status' => AccountStatus::Deactivated]);
+    }
 
-    
+    public function reject(): void
+    {
+        $this->update(['status' => AccountStatus::Rejected]);
+    }
+
+    public function changeRole(Role $role): void
+    {
+        $this->update(['role' => $role]);
+
+        if ($role === Role::Evaluator) {
+            Evaluator::firstOrCreate(
+                ['user_id' => $this->id],
+                ['employee_no' => 'EMP-' . str_pad($this->id, 4, '0', STR_PAD_LEFT)]
+            );
+        }
+    }
 }
