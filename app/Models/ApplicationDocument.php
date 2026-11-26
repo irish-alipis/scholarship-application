@@ -25,4 +25,10 @@ class ApplicationDocument extends Model
     {
         return $this->belongsTo(RequiredDocument::class);
     }
+
+    /** Files are private, so the link goes through a route that checks who is asking. */
+    public function getUrl(): string
+    {
+        return route('applicant.documents.show', $this);
+    }
 }
