@@ -38,7 +38,7 @@
         @endif
     </div>
 
-    <div class="grid grid-cols-12 gap-x-6">
+    <div class="grid grid-cols-12 gap-x-7">
         <div class="col-span-12 xl:col-span-8">
 
             {{-- Decision, evaluator remarks and rejection reason --}}
@@ -120,44 +120,6 @@
                         </div>
                     @empty
                         <p class="mb-0 text-textmuted">No documents uploaded.</p>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-        <div class="col-span-12 xl:col-span-4">
-            <div class="box">
-                <div class="box-header"><div class="box-title">Actions</div></div>
-                <div class="box-body">
-                    <div class="ap-actions" style="flex-direction:column;align-items:stretch;">
-                        @if ($canEdit)
-                            <a href="{{ route('applicant.applications.edit', $application) }}" class="ti-btn ti-btn-primary-full">{{ $status === \App\Enums\ApplicationStatus::Draft ? 'Continue application' : 'Edit details and documents' }}</a>
-                        @endif
-                        @if ($canCancel)
-                            <form method="POST" action="{{ route('applicant.applications.cancel', $application) }}" onsubmit="return confirm('Cancel this application? This cannot be undone.');">
-                                @csrf
-                                <button type="submit" class="ti-btn ti-btn-danger-full w-full">Cancel application</button>
-                            </form>
-                        @endif
-                        @unless ($canEdit || $canCancel)
-                            <p class="ap-muted mb-0">This application is final and can no longer be changed.</p>
-                        @endunless
-                        <a href="{{ route('applicant.applications.index') }}" class="ti-btn ti-btn-light">&larr; My applications</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="box">
-                <div class="box-header"><div class="box-title">Updates on this application</div></div>
-                <div class="box-body">
-                    @forelse ($notifications as $notification)
-                        <div class="mb-3">
-                            <div class="font-semibold text-[0.875rem]">{{ $notification->title }}</div>
-                            <div class="text-[0.8125rem]">{{ $notification->message }}</div>
-                            <div class="ap-muted">{{ $notification->created_at->diffForHumans() }}</div>
-                        </div>
-                    @empty
-                        <p class="mb-0 text-textmuted">No updates yet.</p>
                     @endforelse
                 </div>
             </div>

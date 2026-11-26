@@ -50,14 +50,24 @@
                             <td class="py-2">{{ $application->eligibility_result ? \Illuminate\Support\Str::headline($application->eligibility_result->name) : '-' }}</td>
                             <td class="py-2">{{ $application->submitted_at?->format('M d, Y') ?? '-' }}</td>
                             <td class="py-2">{{ $application->scholarship->deadline->format('M d, Y') }}</td>
-                            <td class="py-2">
-                                <div class="ap-actions">
-                                    <a href="{{ route('applicant.applications.show', $application) }}" class="ti-btn ti-btn-sm ti-btn-light">View</a>
-                                    @if ($application->status === \App\Enums\ApplicationStatus::Draft && \App\Support\ScholarshipAvailability::isOpen($application->scholarship))
-                                        <a href="{{ route('applicant.applications.edit', $application) }}" class="ti-btn ti-btn-sm ti-btn-primary-full">Continue</a>
-                                    @endif
-                                </div>
-                            </td>
+                            <td>
+  <td>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a href="{{ route('applicant.applications.show', $application) }}"
+           class="ti-btn ti-btn-sm ti-btn-light"
+           style="min-width:110px; padding:6px 20px; justify-content:center; white-space:nowrap;">
+            View
+        </a>
+
+        @if ($application->isEditable())
+            <a href="{{ route('applicant.applications.show', $application) }}"
+               class="ti-btn ti-btn-sm ti-btn-primary-full"
+               style="min-width:110px; padding:6px 20px; justify-content:center; white-space:nowrap;">
+                Continue
+            </a>
+        @endif
+    </div>
+</td>
                         </tr>
                     @empty
                         <tr><td class="py-3 text-textmuted" colspan="6">No applications found.</td></tr>
