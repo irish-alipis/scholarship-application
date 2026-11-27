@@ -37,6 +37,7 @@ class ScholarshipRequirement extends Model
     public function displayValue(): string
     {
         return match ($this->requirement_type) {
+            RequirementType::Income,
             RequirementType::AnnualFamilyIncome => '₱' . number_format($this->required_value, 2),
             RequirementType::YearLevel => (string) (int) $this->required_value,
             default => number_format($this->required_value, 2),
@@ -47,6 +48,7 @@ class ScholarshipRequirement extends Model
     {
         return match ($this->requirement_type) {
             RequirementType::Gwa => new GwaRule($this->requirement_condition, $this->required_value),
+            RequirementType::Income,
             RequirementType::AnnualFamilyIncome => new IncomeRule($this->requirement_condition, $this->required_value),
             RequirementType::YearLevel => new YearLevelRule($this->requirement_condition, $this->required_value),
         };
