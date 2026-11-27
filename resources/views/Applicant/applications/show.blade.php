@@ -38,7 +38,7 @@
         @endif
     </div>
 
-    <div class="grid grid-cols-12 gap-x-7">
+     <div class="grid grid-cols-12" style="column-gap: 28px;">
         <div class="col-span-12 xl:col-span-8">
 
             {{-- Decision, evaluator remarks and rejection reason --}}
@@ -120,6 +120,78 @@
                         </div>
                     @empty
                         <p class="mb-0 text-textmuted">No documents uploaded.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        {{-- ===================== RIGHT COLUMN ===================== --}}
+        <div class="col-span-12 xl:col-span-4">
+
+            @php
+                $isDraft = $status === \App\Enums\ApplicationStatus::Draft;
+                $isSubmitted = $status === \App\Enums\ApplicationStatus::Submitted;
+                $canCancel = in_array($status, [
+                    \App\Enums\ApplicationStatus::Draft,
+                    \App\Enums\ApplicationStatus::Submitted,
+                    \App\Enums\ApplicationStatus::UnderEvaluation,
+                ], true);
+                $editRoute = \Illuminate\Support\Facades\Route::has('applicant.applications.edit')
+                    ? route('applicant.applications.edit', $application) : null;
+            @endphp
+
+            {{-- Actions --}}
+            <div class="box">
+                <div class="box-header"><div class="box-title">Actions</div></div>
+                <div class="box-body">
+
+                    @if (($isDraft || $isSubmitted) && $editRoute)
+                        <a href="{{ $editRoute }}" class="ti-btn ti-btn-primary-full" style="width:100%; margin-bottom:12px;">
+                            {{ $isDraft ? 'Continue application' : 'Edit application' }}
+                        </a>
+                    @endif
+
+                    @if ($canCancel && \Illuminate\Support\Facades\Route::has('applicant.applications.cancel'))
+                        <form method="POST" action="{{ route('applicant.applications.cancel', $application) }}"
+                              onsubmit="return confirm('Cancel this application? This cannot be undone.');"
+                              style="margin-bottom:12px;">
+                            @csrf
+                            <button type="submit" class="ti-btn ti-btn-danger-full" style="width:100%;">Cancel application</button>
+                        </form>
+                    @endif
+
+                    <a href="{{ route('applicant.applications.index') }}" class="ti-btn ti-btn-light" style="width:100%;">
+                        &larr; My applications
+                    </a>
+                </div>
+            </div>
+
+            {{-- Updates --}}
+            <div class="box">
+                <div class="box-header"><div class="box-title">Updates on this application</div></div>
+                <div class="box-body">
+                    @php
+                        $updates = method_exists($application, 'statusHistories')
+                            ? $application->statusHistories->sortByDesc('id')->take(10)
+                            : collect();
+                    @endphp
+
+                    @forelse ($updates as $update)
+                        @php
+                            $to = $update->to_status;
+                            $toText = $to instanceof \BackedEnum
+                                ? \Illuminate\Support\Str::headline($to->name)
+                                : \Illuminate\Support\Str::headline((string) $to);
+                        @endphp
+                        <div style="margin-bottom:14px;">
+                            <div style="font-weight:600;">{{ $toText }}</div>
+                            <div class="ap-muted" style="font-size:.78rem;">{{ $update->created_at?->format('M d, Y g:i A') }}</div>
+                            @if ($update->note)
+                                <div style="font-size:.85rem;">{{ $update->note }}</div>
+                            @endif
+                        </div>
+                    @empty
+                        <p class="mb-0 text-textmuted">No updates yet.</p>
                     @endforelse
                 </div>
             </div>
